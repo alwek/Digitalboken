@@ -8,13 +8,13 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "icon-512.png",
-      "type": "image/png",
+      "src": "blazor.svg",
+      "type": "image/svg",
       "sizes": "512x512"
     },
     {
-      "src": "icon-192.png",
-      "type": "image/png",
+      "src": "blazor.svg",
+      "type": "image/svg",
       "sizes": "192x192"
     }
   ]

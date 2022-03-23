@@ -1,0 +1,60 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+ buildConfiguration: "Release"
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install'
+  inputs:
+    version: 6.0.x
+    performMultiLevelLookup: true
+    includePreviewVersions: true
+
+- task: DotNetCoreCLI@2
+  displayName: 'Restore'
+  inputs:
+    command: 'restore'
+    feedsToUse: 'select'
+    vstsFeed: 'my-vsts-feed'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build'
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+ - task: DotNetCoreCLI@2
+   displayName: 'Publish'
+   inputs:
+     command: publish
+     publishWebProjects: True
+     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+     zipAfterPublish: True
+
+  - task: Docker@2
+    displayName: Build image
+    inputs:
+      repository: digitalboken-image
+      command: build
+      Dockerfile: app/Dockerfile
+
+  - task: Docker@2
+    displayName: Push image
+    inputs:
+      containerRegistry: $(dockerHub)
+      repository: $(imageName)
+      command: push
+      tags: |
+        test1
+        test2

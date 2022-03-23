@@ -1,11 +1,13 @@
 ﻿@page "/fetchdata"
-@using Digitalboken.Shared
+@using Digitalboken.Client.Models
 @inject HttpClient Http
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
 
 <PageTitle>Weather forecast</PageTitle>
 
 <h1>Weather forecast</h1>
-
+<p>SERVER_HOST: @Configuration["SERVER_HOST"]</p>
 <p>This component demonstrates fetching data from the server.</p>
 
 @if (forecasts == null)
