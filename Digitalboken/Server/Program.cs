@@ -33,7 +33,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddSingleton<IMongoDatabase>(new MongoClient(
     builder.Configuration.GetConnectionString("MongoDb")).GetDatabase("Digitalboken"));
-builder.Services.AddSingleton<IInstructionRepository, InstructionRepository>();
+builder.Services.AddSingleton<IDocumentRepository, DocumentRepository>();
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 builder.Services.AddHttpClient<IGoogleSearchService, GoogleSearchService>(client =>

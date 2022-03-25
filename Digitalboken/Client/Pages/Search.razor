@@ -1,0 +1,33 @@
+﻿@page "/search/{query}"
+@using Digitalboken.Client.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+search
+
+@if (string.IsNullOrEmpty(query))
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p><em>Got Result!</em></p>
+   
+}
+
+@code {
+    [Parameter]
+    public string? query { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("I'm inside init");
+        if (string.IsNullOrWhiteSpace(query))
+            NavigationManager.NavigateTo("/error");
+    }
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine("I'm inside parameter");
+    }
+}

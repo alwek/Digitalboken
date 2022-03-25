@@ -1,9 +1,57 @@
 ﻿@page "/"
+@using System.Net
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
 
-<PageTitle>Index</PageTitle>
+<style>
+    .searchbox{
+        align-content: center;
+        border-radius: 25px;
+        padding: 16px;
+        max-width: 60%;
+        width: 400px;
+        min-width: 30%;
+        margin-bottom: 8px;
+    }
 
-<h1>Hello, world!</h1>
+    .middleOfPage{
+        text-align: center;
+        margin-top: 30vh;
+    }
 
-Welcome to your new app.
+    .suggestionText{
+        color: rgba(193, 100, 225, 1);
+    }
+</style>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<div class="middleOfPage">
+    <h1>digitalboken</h1>
+    <input class="searchbox" type="text" placeholder="Vad undrar du över?" onkeypress="@Keypress"
+        @bind="@Query" @oninput="@((e) => { Query = (string?) e.Value; })"/>
+    <br />
+
+    <p class="suggestionText">we knowit</p>
+</div>
+
+@code {
+    private string? Query { get; set; }
+
+    private async Task Keypress(KeyboardEventArgs args)
+    {
+        if(args.Code == "Enter")
+        {
+            if (string.IsNullOrWhiteSpace(Query))
+                return;
+
+            var response = await Http.GetAsync($"Index/{Query}");
+            var guid = await response.Content.ReadAsStringAsync();
+
+            if (response.StatusCode == HttpStatusCode.OK)
+                NavigationManager.NavigateTo($"/document/{guid}");
+            else if (response.StatusCode == HttpStatusCode.Created)
+                NavigationManager.NavigateTo($"/search/{guid}");
+            else
+                NavigationManager.NavigateTo("/error");
+        }
+    }
+}

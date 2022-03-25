@@ -1,0 +1,13 @@
+﻿@page "/error"
+@using Digitalboken.Client.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+Error, lol.
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("I'm inside init");
+    }
+}

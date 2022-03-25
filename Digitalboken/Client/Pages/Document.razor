@@ -1,0 +1,31 @@
+﻿@page "/document/{guid}"
+@using Digitalboken.Client.Models
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+@if (string.IsNullOrEmpty(guid))
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p><em>Got Result!</em></p>
+   
+}
+
+@code {
+    [Parameter]
+    public string? guid { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine("I'm inside init");
+        if (string.IsNullOrWhiteSpace(guid))
+            NavigationManager.NavigateTo("/error");
+    }
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine("I'm inside parameter");
+    }
+}

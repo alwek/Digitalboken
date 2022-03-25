@@ -15,13 +15,13 @@ namespace Digitalboken.Server.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly IInstructionRepository _instructionRepository;
+        private readonly IDocumentRepository _documentRepository;
         private readonly IRedisCacheService _redisCacheService;
         private readonly ISearchRepository _searchRepository;
         private readonly IGoogleSearchService _googleSearchService;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger,
-            IInstructionRepository repository,
+            IDocumentRepository repository,
             ISearchRepository searchRepository,
             IRedisCacheService redisService,
             IGoogleSearchService googleSearchService)
@@ -29,7 +29,7 @@ namespace Digitalboken.Server.Controllers
             _logger = logger;
             _redisCacheService = redisService;
             _searchRepository = searchRepository;
-            _instructionRepository = repository;
+            _documentRepository = repository;
             _googleSearchService = googleSearchService;
         }
 
@@ -37,11 +37,11 @@ namespace Digitalboken.Server.Controllers
         public async Task<IEnumerable<WeatherForecast>> Get()
         {
             _logger.LogInformation("Recieved GET request");
-            Instruction instruction = new() { Text = "alican" };
+            Document instruction = new() { Text = "alican" };
             Search searchResult = await _googleSearchService.Search("alican");
             await _searchRepository.InsertAsync(searchResult);
             await _redisCacheService.InsertAsync("query", "alican");
-            await _instructionRepository.InsertAsync(instruction);
+            await _documentRepository.InsertAsync(instruction);
             
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

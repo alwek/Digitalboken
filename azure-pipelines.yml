@@ -1,60 +1,36 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- main
-
 pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
- buildConfiguration: "Release"
+  name: Azure Pipelines
 
 steps:
-- task: UseDotNet@2
-  displayName: 'Install'
+- task: DotNetCoreCLI@2
+  displayName: Restore
   inputs:
-    version: 6.0.x
-    performMultiLevelLookup: true
-    includePreviewVersions: true
+    command: restore
+    projects: '$(Parameters.RestoreBuildProjects)'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Restore'
+  displayName: Build
   inputs:
-    command: 'restore'
-    feedsToUse: 'select'
-    vstsFeed: 'my-vsts-feed'
+    projects: '$(Parameters.RestoreBuildProjects)'
+    arguments: '--configuration $(BuildConfiguration)'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build'
+  displayName: Test
   inputs:
-    command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    command: test
+    projects: '$(Parameters.TestProjects)'
+    arguments: '--configuration $(BuildConfiguration)'
 
- - task: DotNetCoreCLI@2
-   displayName: 'Publish'
-   inputs:
-     command: publish
-     publishWebProjects: True
-     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-     zipAfterPublish: True
+- task: DotNetCoreCLI@2
+  displayName: Publish
+  inputs:
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+    zipAfterPublish: True
 
-  - task: Docker@2
-    displayName: Build image
-    inputs:
-      repository: digitalboken-image
-      command: build
-      Dockerfile: app/Dockerfile
-
-  - task: Docker@2
-    displayName: Push image
-    inputs:
-      containerRegistry: $(dockerHub)
-      repository: $(imageName)
-      command: push
-      tags: |
-        test1
-        test2
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
