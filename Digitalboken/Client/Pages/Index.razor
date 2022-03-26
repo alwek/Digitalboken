@@ -43,8 +43,8 @@
             if (string.IsNullOrWhiteSpace(Query))
                 return;
 
-            var response = await Http.GetAsync($"Index/{Query}");
-            var guid = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await Http.GetAsync($"Search/{Query}");
+            string guid = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == HttpStatusCode.OK)
                 NavigationManager.NavigateTo($"/document/{guid}");

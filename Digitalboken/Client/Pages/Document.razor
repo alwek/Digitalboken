@@ -3,7 +3,7 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-@if (string.IsNullOrEmpty(guid))
+@if (document != null)
 {
     <p><em>Loading...</em></p>
 }
@@ -17,15 +17,19 @@ else
     [Parameter]
     public string? guid { get; set; }
 
+    private Models.Document? document { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Console.WriteLine("I'm inside init");
         if (string.IsNullOrWhiteSpace(guid))
             NavigationManager.NavigateTo("/error");
-    }
 
-    protected override void OnParametersSet()
-    {
-        Console.WriteLine("I'm inside parameter");
+        HttpResponseMessage response = await Http.GetAsync($"Document/{guid}");
+
+        if (response.IsSuccessStatusCode)
+            document = await response.Content.ReadFromJsonAsync<Models.Document>();
+        else
+            NavigationManager.NavigateTo("/error");
     }
 }

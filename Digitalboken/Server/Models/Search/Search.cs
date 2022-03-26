@@ -1,9 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 
 namespace Digitalboken.Server.Models.Search
 {
     public partial class Search
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
         [JsonProperty("kind")]
         public string Kind { get; set; }
 

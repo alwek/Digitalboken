@@ -15,6 +15,35 @@ namespace Digitalboken.Server.Repositories
             _logger = logger;
         }
 
+        public async Task<Search> GetByQueryAsync(string searchTerm)
+        {
+            try
+            {
+                var result = await _collection.FindAsync(
+                    x => x.Queries.Request.FirstOrDefault().SearchTerms == searchTerm);
+                return await result.FirstOrDefaultAsync();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return null;
+            }
+        }
+
+        public async Task<Search> GetAsync(string guid)
+        {
+            try
+            {
+                var result = await _collection.FindAsync(x => x.Id == guid);
+                return await result.FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return null;
+            }
+        }
+
         public async Task InsertAsync(Search data)
         {
             try
