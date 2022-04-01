@@ -1,5 +1,4 @@
 ﻿using Digitalboken.Server.Interfaces;
-using Digitalboken.Server.Models;
 using Digitalboken.Server.Models.Search;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -7,49 +6,38 @@ using Newtonsoft.Json;
 namespace Digitalboken.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SearchController : ControllerBase
     {
         private readonly ILogger<SearchController> _logger;
-        private readonly IDocumentRepository _documentRepository;
         private readonly IRedisCacheService _redisCacheService;
         private readonly ISearchRepository _searchRepository;
-        private readonly IGoogleSearchService _googleSearchService;
 
         public SearchController(ILogger<SearchController> logger,
-            IDocumentRepository documentRepository,
             IRedisCacheService redisCacheService,
-            ISearchRepository searchRepository,
-            IGoogleSearchService googleSearchService)
+            ISearchRepository searchRepository)
         {
             _logger = logger;
-            _documentRepository = documentRepository;
             _redisCacheService = redisCacheService;
             _searchRepository = searchRepository;
-            _googleSearchService = googleSearchService;
         }
 
         [HttpGet("{query}")]
-        public async Task<IActionResult> Search(string query)
+        public async Task<IActionResult> Search(string guid)
         {
             try
             {
-               Document doc = await FindDocumentInCacheAsync(query);
+               Search srch = await FindSearchInCacheAsync(guid);
                 
-                if(doc != null)
-                    return Ok(doc.Id);
-
-                doc = await FindDocumentInCollectionAsync(query);
-
-                if (doc != null)
-                    return Ok(doc.Id);
-
-                Search srch = await SearchForQueryWithGoogle(query);
-
                 if(srch != null)
-                    return Created("", srch.Id);
+                    return Ok(srch);
+
+                srch = await FindSearchInCollectionAsync(guid);
+
+                if (srch != null)
+                    return Ok(srch);
                 else
-                    return NotFound(query);
+                    return NotFound(guid);
             }
             catch (Exception ex)
             {
@@ -58,7 +46,7 @@ namespace Digitalboken.Server.Controllers
             }
         }
 
-        private async Task<Document> FindDocumentInCacheAsync(string key)
+        private async Task<Search> FindSearchInCacheAsync(string key)
         {
             try
             {
@@ -67,59 +55,36 @@ namespace Digitalboken.Server.Controllers
                 if (cached != null)
                 {
                     await _redisCacheService.RefreshAsync(key);
-                    return JsonConvert.DeserializeObject<Document>(cached);
+                    return JsonConvert.DeserializeObject<Search>(cached);
                 }
                     
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error when searching for document in cache.");
+                _logger.LogError(ex, "Error when searching for search in cache.");
                 return null;
             }
         }
 
-        private async Task<Document> FindDocumentInCollectionAsync(string name)
+        private async Task<Search> FindSearchInCollectionAsync(string name)
         {
             try
             {
-                Document doc = await _documentRepository.GetByNameAsync(name);
+                Search srch = await _searchRepository.GetBySearchTermAsync(name);
 
-                if(doc != null)
+                if(srch != null)
                 {
-                    string json = JsonConvert.SerializeObject(doc);
-                    await _redisCacheService.InsertAsync(doc.Id.ToString(), json);
-                    return doc;
+                    string json = JsonConvert.SerializeObject(srch);
+                    await _redisCacheService.InsertAsync(srch.Id.ToString(), json);
+                    return srch;
                 }
 
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error when searching for document in database.");
-                return null;
-            }
-        }
-
-        private async Task<Search> SearchForQueryWithGoogle(string query)
-        {
-            try
-            {
-                Search search = await _searchRepository.GetByQueryAsync(query);
-
-                if (search != null)
-                    return search;
-                else
-                    search = await _googleSearchService.Search(query);
-
-                if(search != null)
-                    await _searchRepository.InsertAsync(search);
-
-                return search;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error when searching for query in google.");
+                _logger.LogError(ex, "Error when searching for search in database.");
                 return null;
             }
         }

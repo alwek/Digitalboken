@@ -7,7 +7,6 @@ namespace Digitalboken.Server.Models.Search
     public partial class Search
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [JsonProperty("kind")]

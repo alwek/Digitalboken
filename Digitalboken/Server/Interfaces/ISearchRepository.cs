@@ -6,6 +6,6 @@ namespace Digitalboken.Server.Interfaces
     {
         public Task InsertAsync(Search data);
         public Task<Search> GetAsync(string guid);
-        public Task<Search> GetByQueryAsync(string searchTerm);
+        public Task<Search> GetBySearchTermAsync(string searchTerm);
     }
 }

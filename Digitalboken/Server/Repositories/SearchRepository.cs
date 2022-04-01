@@ -1,5 +1,6 @@
 ﻿using Digitalboken.Server.Interfaces;
 using Digitalboken.Server.Models.Search;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Digitalboken.Server.Repositories
@@ -15,13 +16,13 @@ namespace Digitalboken.Server.Repositories
             _logger = logger;
         }
 
-        public async Task<Search> GetByQueryAsync(string searchTerm)
+        public async Task<Search> GetBySearchTermAsync(string searchTerm)
         {
             try
             {
-                var result = await _collection.FindAsync(
-                    x => x.Queries.Request.FirstOrDefault().SearchTerms == searchTerm);
-                return await result.FirstOrDefaultAsync();
+                var filter = Builders<Search>.Filter.Eq(x => x.Queries.Request[0].SearchTerms, searchTerm);
+                var result = await _collection.Find(filter).FirstOrDefaultAsync();
+                return result;
             }
             catch(Exception ex)
             {

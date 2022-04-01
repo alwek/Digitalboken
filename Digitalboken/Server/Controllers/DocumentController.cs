@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Digitalboken.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class DocumentController : ControllerBase
     {
         private readonly ILogger<DocumentController> _logger;
@@ -22,8 +22,26 @@ namespace Digitalboken.Server.Controllers
             _redisCacheService = redisCacheService;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Post(Document document)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(document);
+
+                await _documentRepository.InsertAsync(document);
+                return Ok(document.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong when processing document request");
+                return StatusCode(500, "Something went wrong when processing document request");
+            }
+        }
+
         [HttpGet("{guid}")]
-        public async Task<IActionResult> Get(string guid)
+        public async Task<IActionResult> GetAuthoredDocument(string guid)
         {
             try
             {
@@ -33,9 +51,9 @@ namespace Digitalboken.Server.Controllers
                     document = await _documentRepository.GetAsync(guid);
 
                 if(document != null)
-                    return Ok(guid);
+                    return Ok(document);
                 else
-                    return NotFound(document);
+                    return NotFound(guid);
             }
             catch (Exception ex)
             {

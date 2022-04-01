@@ -43,10 +43,10 @@ namespace Digitalboken.Server.Services
 
                 byte[] encoded = await _cache.GetAsync(key);
 
-                if(encoded == null)
-                    throw new ArgumentNullException(nameof(encoded), "Encoded value is null or empty.");
-
-                return Encoding.UTF8.GetString(encoded);
+                if (encoded == null)
+                    return null;
+                else
+                    return Encoding.UTF8.GetString(encoded);
             }
             catch (Exception ex)
             {
