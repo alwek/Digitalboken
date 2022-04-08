@@ -22,7 +22,28 @@ namespace Digitalboken.Server.Controllers
             _searchRepository = searchRepository;
         }
 
-        [HttpGet("{query}")]
+        [HttpPost]
+        public async Task<IActionResult> Post(Search search)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(search);
+
+                var success = await _searchRepository.InsertAsync(search);
+                if (success)
+                    return Ok(search.Id);
+                else
+                    return UnprocessableEntity(search.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Something went wrong when processing search request");
+                return StatusCode(500, "Something went wrong when processing search request");
+            }
+        }
+
+       [HttpGet("{guid}")]
         public async Task<IActionResult> Search(string guid)
         {
             try
@@ -50,7 +71,7 @@ namespace Digitalboken.Server.Controllers
         {
             try
             {
-                string cached = await _redisCacheService.GetAsync(key);
+                string cached = await _redisCacheService.GetAsync("search" + key);
 
                 if (cached != null)
                 {
@@ -76,7 +97,7 @@ namespace Digitalboken.Server.Controllers
                 if(srch != null)
                 {
                     string json = JsonConvert.SerializeObject(srch);
-                    await _redisCacheService.InsertAsync(srch.Id.ToString(), json);
+                    await _redisCacheService.InsertAsync("search" + srch.Id, json);
                     return srch;
                 }
 

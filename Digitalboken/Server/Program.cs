@@ -2,11 +2,11 @@ using Digitalboken.Server.Interfaces;
 using Digitalboken.Server.Repositories;
 using Digitalboken.Server.Services;
 using Elastic.Apm.NetCoreAll;
-using MongoDB.Driver;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using System.Security.Authentication;
+using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,11 +31,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
     options.InstanceName = "DigitalbokenRedis";
 });
-builder.Services.AddSingleton<IMongoDatabase>(new MongoClient(
-    builder.Configuration.GetConnectionString("MongoDb")).GetDatabase("Digitalboken"));
-builder.Services.AddSingleton<IDocumentRepository, DocumentRepository>();
-builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
-builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 builder.Services.AddHttpClient<IGoogleSearchService, GoogleSearchService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GoogleSearch:Url"));
@@ -43,6 +38,10 @@ builder.Services.AddHttpClient<IGoogleSearchService, GoogleSearchService>(client
     client.DefaultRequestHeaders.Add("key", builder.Configuration.GetValue<string>("GoogleSearch:ApiKey"));
     client.DefaultRequestHeaders.Add("cx", builder.Configuration.GetValue<string>("GoogleSearch:SearchEngineId"));
 });
+builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+builder.Services.AddSingleton<IDocumentRepository, DocumentRepository>();
+builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
+builder.Services.AddSingleton<CosmosClient>(new CosmosClient(builder.Configuration.GetConnectionString("AzureCosmosDb")));
 
 // Use Cors
 builder.Services.AddCors(options =>
@@ -90,7 +89,7 @@ app.Run();
 
 void ConfigureLogging()
 {
-    var environment = Environment.GetEnvironmentVariable("ENVIRONMENT_NAME");//Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+    var environment = Environment.GetEnvironmentVariable("ENVIRONMENT_NAME");
     var configuration = new ConfigurationBuilder()
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
         .AddJsonFile($"appsettings.{environment}.json", optional: true)

@@ -1,29 +1,31 @@
 ﻿using Digitalboken.Server.Interfaces;
 using Digitalboken.Server.Models;
-using MongoDB.Driver;
+using Microsoft.Azure.Cosmos;
 
 namespace Digitalboken.Server.Repositories
 {
     public class DocumentRepository : IDocumentRepository
     {
-        private readonly IMongoCollection<Document> _collection;
+        private readonly Container _container;
         private readonly ILogger<DocumentRepository> _logger;
 
-        public DocumentRepository(IMongoDatabase database, ILogger<DocumentRepository> logger)
+        public DocumentRepository(ILogger<DocumentRepository> logger, CosmosClient client)
         {
-            _collection = database.GetCollection<Document>(nameof(Document));
+            _container = client.GetDatabase("Digitalboken").GetContainer("Document");
             _logger = logger;
         }
 
-        public async Task InsertAsync(Document entity)
+        public async Task<bool> InsertAsync(Document entity)
         {
             try
             {
-                await _collection.InsertOneAsync(entity);
+                await _container.CreateItemAsync(entity);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+                return false;
             }
         }
 
@@ -31,7 +33,7 @@ namespace Digitalboken.Server.Repositories
         {
             try
             {
-                return await _collection.Find(x => x.Id == guid).FirstOrDefaultAsync();
+                return await _container.ReadItemAsync<Document>(guid, PartitionKey.None);
             }
             catch(Exception ex)
             {
@@ -44,7 +46,11 @@ namespace Digitalboken.Server.Repositories
         {
             try
             {
-                return await _collection.Find(x => x.Name == name).FirstOrDefaultAsync();
+                return _container
+                    .GetItemLinqQueryable<Document>(allowSynchronousQueryExecution: true)
+                    .Where(x => x.Name == name)
+                    .ToList()
+                    .FirstOrDefault();
             }
             catch (Exception ex)
             {

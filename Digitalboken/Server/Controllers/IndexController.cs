@@ -35,16 +35,19 @@ namespace Digitalboken.Server.Controllers
             try
             {
                 Document doc = await FindDocumentInCacheAsync(query);
+                Search srch = await FindSearchInCacheAsync(query);
 
                 if (doc != null)
                     return Ok(doc.Id);
+                else if(srch != null)
+                    return Created("", srch.Id);
 
                 doc = await FindDocumentInCollectionAsync(query);
 
                 if (doc != null)
                     return Ok(doc.Id);
 
-                Search srch = await SearchForQueryWithGoogle(query);
+                srch = await SearchForQueryWithGoogle(query);
 
                 if (srch != null)
                     return Created("", srch.Id);
@@ -62,7 +65,7 @@ namespace Digitalboken.Server.Controllers
         {
             try
             {
-                string cached = await _redisCacheService.GetAsync(key);
+                string cached = await _redisCacheService.GetAsync("document" + key);
 
                 if (cached != null)
                 {
@@ -79,6 +82,27 @@ namespace Digitalboken.Server.Controllers
             }
         }
 
+        private async Task<Search> FindSearchInCacheAsync(string key)
+        {
+            try
+            {
+                string cached = await _redisCacheService.GetAsync("search" + key);
+
+                if (cached != null)
+                {
+                    await _redisCacheService.RefreshAsync(key);
+                    return JsonConvert.DeserializeObject<Search>(cached);
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error when searching for search in cache.");
+                return null;
+            }
+        }
+
         private async Task<Document> FindDocumentInCollectionAsync(string name)
         {
             try
@@ -88,8 +112,8 @@ namespace Digitalboken.Server.Controllers
                 if (doc != null)
                 {
                     string json = JsonConvert.SerializeObject(doc);
-                    await _redisCacheService.InsertAsync(doc.Id, json);
-                    await _redisCacheService.InsertAsync(doc.Name, json);
+                    await _redisCacheService.InsertAsync("document" + doc.Id, json);
+                    await _redisCacheService.InsertAsync("document" + doc.Name, json);
                 }
 
                 return doc;
@@ -107,16 +131,14 @@ namespace Digitalboken.Server.Controllers
             {
                 Search search = await _searchRepository.GetBySearchTermAsync(query);
 
-                if (search != null)
-                    return search;
-                else
+                if (search == null)
                     search = await _googleSearchService.Search(query);
 
                 if (search != null)
                 {
                     await _searchRepository.InsertAsync(search);
-                    await _redisCacheService.InsertAsync(search.Id, JsonConvert.SerializeObject(search));
-                    await _redisCacheService.InsertAsync(query, JsonConvert.SerializeObject(search));
+                    await _redisCacheService.InsertAsync("search" + search.Id, JsonConvert.SerializeObject(search));
+                    await _redisCacheService.InsertAsync("search" + query, JsonConvert.SerializeObject(search));
                 }
                 
                 return search;

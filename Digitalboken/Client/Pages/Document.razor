@@ -3,14 +3,34 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
-@if (document != null)
+<style>
+    .documentBox{
+        border-radius: 25px;
+        padding: 16px;
+        max-width: 60%;
+        width: 400px;
+        min-width: 30%;
+        margin-top: 30vh;
+        margin-bottom: 8px;
+        background-color: white;
+    }
+
+    .middleOfPage{
+        align-content: center;
+    }
+</style>
+
+@if(document != null)
 {
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <p><em>Got Result!</em></p>
-   
+    <div class="middleOfPage">
+        <h1>@document.Name</h1>
+    </div>   
+
+    <div class="middleOfPage">
+        <span class="documentBox">
+            @document.Text
+        </span>
+    </div>
 }
 
 @code {
@@ -21,11 +41,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine("I'm inside init");
         if (string.IsNullOrWhiteSpace(guid))
             NavigationManager.NavigateTo("/error");
 
-        HttpResponseMessage response = await Http.GetAsync($"Document/{guid}");
+        HttpResponseMessage response = await Http.GetAsync($"api/Document/{guid}");
 
         if (response.IsSuccessStatusCode)
             document = await response.Content.ReadFromJsonAsync<Models.Document>();

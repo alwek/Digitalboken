@@ -1,49 +1,31 @@
-﻿@page "/search/{query}"
+﻿@page "/search/{guid}"
 @using Digitalboken.Client.Models
 @inject HttpClient Http
-@using Microsoft.Extensions.Configuration
-@inject IConfiguration Configuration
+@inject NavigationManager NavigationManager
 
-<PageTitle>Weather forecast</PageTitle>
-
-<h1>Weather forecast</h1>
-<p>SERVER_HOST: @Configuration["SERVER_HOST"]</p>
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
+@if(string.IsNullOrEmpty(guid) || data == null || string.IsNullOrEmpty(data.Id))
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <p><em>Got following guid: @guid</em></p>
+    <p>search id: @data.Id</p>
 }
 
 @code {
-    private WeatherForecast[]? forecasts;
+    [ParameterAttribute]
+    public string guid { get; set; }
+
+    public Models.Search.Search data { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        HttpResponseMessage response = await Http.GetAsync($"api/Search/{guid}");
+
+        if (response.IsSuccessStatusCode)
+            data = await response.Content.ReadFromJsonAsync<Models.Search.Search>();
+        else
+            NavigationManager.NavigateTo("/error");
     }
 }

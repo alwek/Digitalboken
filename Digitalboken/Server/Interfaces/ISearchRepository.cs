@@ -4,7 +4,7 @@ namespace Digitalboken.Server.Interfaces
 {
     public interface ISearchRepository
     {
-        public Task InsertAsync(Search data);
+        public Task<bool> InsertAsync(Search data);
         public Task<Search> GetAsync(string guid);
         public Task<Search> GetBySearchTermAsync(string searchTerm);
     }

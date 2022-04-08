@@ -1,12 +1,9 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
-namespace Digitalboken.Server.Models.Search
+namespace Digitalboken.Client.Models.Search
 {
     public partial class Search
     {
-        [JsonProperty("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [JsonProperty("kind")]
@@ -32,8 +29,5 @@ namespace Digitalboken.Server.Models.Search
 
         [JsonProperty("queries")]
         public Queries Queries { get; set; }
-
-        [JsonProperty("partitionKey")]
-        public string PartitionKey { get; set; }
     }
 }

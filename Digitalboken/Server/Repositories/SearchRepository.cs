@@ -1,18 +1,17 @@
 ﻿using Digitalboken.Server.Interfaces;
 using Digitalboken.Server.Models.Search;
-using MongoDB.Bson;
-using MongoDB.Driver;
+using Microsoft.Azure.Cosmos;
 
 namespace Digitalboken.Server.Repositories
 {
     public class SearchRepository : ISearchRepository
     {
-        private readonly IMongoCollection<Search> _collection;
         private readonly ILogger<SearchRepository> _logger;
+        private readonly Container _container;
 
-        public SearchRepository(IMongoDatabase database, ILogger<SearchRepository> logger)
+        public SearchRepository(ILogger<SearchRepository> logger, CosmosClient client)
         {
-            _collection = database.GetCollection<Search>(nameof(Search));
+            _container = client.GetDatabase("Digitalboken").GetContainer("Search");
             _logger = logger;
         }
 
@@ -20,9 +19,11 @@ namespace Digitalboken.Server.Repositories
         {
             try
             {
-                var filter = Builders<Search>.Filter.Eq(x => x.Queries.Request[0].SearchTerms, searchTerm);
-                var result = await _collection.Find(filter).FirstOrDefaultAsync();
-                return result;
+                return _container
+                    .GetItemLinqQueryable<Search>(allowSynchronousQueryExecution: true)
+                    .Where(x => x.Queries.Request[0].SearchTerms == searchTerm)
+                    .ToList()
+                    .FirstOrDefault();
             }
             catch(Exception ex)
             {
@@ -35,8 +36,7 @@ namespace Digitalboken.Server.Repositories
         {
             try
             {
-                var result = await _collection.FindAsync(x => x.Id == guid);
-                return await result.FirstOrDefaultAsync();
+                return await _container.ReadItemAsync<Search>(guid, PartitionKey.None);
             }
             catch (Exception ex)
             {
@@ -45,15 +45,17 @@ namespace Digitalboken.Server.Repositories
             }
         }
 
-        public async Task InsertAsync(Search data)
+        public async Task<bool> InsertAsync(Search data)
         {
             try
             {
-                await _collection.InsertOneAsync(data);
+                await _container.CreateItemAsync(data);
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);
+                return false;
             }
         }
     }

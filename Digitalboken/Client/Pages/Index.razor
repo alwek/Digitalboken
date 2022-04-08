@@ -38,12 +38,12 @@
 
     private async Task Keypress(KeyboardEventArgs args)
     {
-        if(args.Code == "Enter")
+        if(args.Code == "Enter") 
         {
             if (string.IsNullOrWhiteSpace(Query))
                 return;
 
-            HttpResponseMessage response = await Http.GetAsync($"Search/{Query}");
+            HttpResponseMessage response = await Http.GetAsync($"api/{Query}");
             string guid = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == HttpStatusCode.OK)

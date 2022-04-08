@@ -30,8 +30,11 @@ namespace Digitalboken.Server.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(document);
 
-                await _documentRepository.InsertAsync(document);
-                return Ok(document.Id);
+                var success = await _documentRepository.InsertAsync(document);
+                if (success)
+                    return Ok(document.Id);
+                else
+                    return UnprocessableEntity(document.Id);
             }
             catch (Exception ex)
             {
