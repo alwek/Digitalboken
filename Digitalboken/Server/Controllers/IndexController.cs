@@ -132,14 +132,17 @@ namespace Digitalboken.Server.Controllers
                 Search search = await _searchRepository.GetBySearchTermAsync(query);
 
                 if (search == null)
+                {
                     search = await _googleSearchService.Search(query);
 
-                if (search != null)
-                {
-                    await _searchRepository.InsertAsync(search);
-                    await _redisCacheService.InsertAsync("search" + search.Id, JsonConvert.SerializeObject(search));
-                    await _redisCacheService.InsertAsync("search" + query, JsonConvert.SerializeObject(search));
+                    if(search != null)
+                        await _searchRepository.InsertAsync(search);
+                    else 
+                        return null;
                 }
+                
+                await _redisCacheService.InsertAsync("search" + search.Id, JsonConvert.SerializeObject(search));
+                await _redisCacheService.InsertAsync("search" + query, JsonConvert.SerializeObject(search));
                 
                 return search;
             }

@@ -4,32 +4,17 @@
 @inject NavigationManager NavigationManager
 
 <style>
-    .documentBox{
-        border-radius: 25px;
-        padding: 16px;
-        max-width: 60%;
-        width: 400px;
-        min-width: 30%;
-        margin-top: 30vh;
-        margin-bottom: 8px;
-        background-color: white;
-    }
-
-    .middleOfPage{
+    .documentArea{
         align-content: center;
+        color: white;
     }
 </style>
 
 @if(document != null)
 {
-    <div class="middleOfPage">
+    <div class="documentArea">
         <h1>@document.Name</h1>
-    </div>   
-
-    <div class="middleOfPage">
-        <span class="documentBox">
-            @document.Text
-        </span>
+        <p>@document.Text</p>
     </div>
 }
 

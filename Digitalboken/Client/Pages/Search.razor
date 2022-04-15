@@ -3,6 +3,29 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
+<style>
+    .documentArea{
+        align-content: center;
+        color: white;
+    }
+
+    img {
+        height:170px
+        width: auto;/*maintain aspect ratio*/
+        max-width:500px;
+    }   
+
+    p{
+        text-align: center;
+        color: white;
+    }
+
+    td{
+        text-align: center;
+        color: white;
+    }
+</style>
+
 @if(string.IsNullOrEmpty(guid) || data == null || string.IsNullOrEmpty(data.Id))
 {
     <p><em>Loading...</em></p>
@@ -11,6 +34,24 @@ else
 {
     <p><em>Got following guid: @guid</em></p>
     <p>search id: @data.Id</p>
+
+    <table>
+    @foreach(var item in data.Results)
+    {
+        <tr>
+            <td>@item.Title</td>
+            <td>@item.Snippet</td>
+                @if(item.Pagemap?.CseImage?.FirstOrDefault() != null)
+                {
+                    <td><img src=@item.Pagemap.CseImage.FirstOrDefault().Src alt="alternatetext"></td>
+                }
+                else
+                {
+                    <td>no image</td>
+                }
+        </tr>      
+    }
+    </table>
 }
 
 @code {
