@@ -8,6 +8,7 @@
     <UserSecretsId>d5deae90-e54e-43b8-847b-f2c9c7b3ffea</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
+	<NoWarn>CS8600, CS8602, CS8603, CS8618, CA2254</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

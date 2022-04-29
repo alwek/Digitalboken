@@ -8,10 +8,10 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-var serverHost = string.IsNullOrEmpty(builder.Configuration["SERVER_HOST"]) ?
+string serverHost = string.IsNullOrEmpty(builder.Configuration["SERVER_HOST"]) ?
     builder.HostEnvironment.BaseAddress :
     builder.Configuration["SERVER_HOST"];
 
-builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(serverHost) });
+builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(serverHost ?? string.Empty) });
 
 await builder.Build().RunAsync();

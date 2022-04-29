@@ -4,7 +4,25 @@
 @inject NavigationManager NavigationManager
 
 <style>
-    .searchbox{
+    h1 {
+        text-align: center;
+        margin-bottom: 24px;
+        color: white;
+        font-weight: 400;
+    }
+
+    p {
+        text-align: center;
+        color: white;
+        color: rgba(193, 100, 225, 1);
+    }
+
+    .middleOfPage {
+        text-align: center;
+        margin-top: 30vh;
+    }
+
+    .searchbox {
         align-content: center;
         border-radius: 25px;
         padding: 16px;
@@ -13,21 +31,14 @@
         min-width: 30%;
         margin-bottom: 8px;
     }
-
-    .middleOfPage{
-        text-align: center;
-        margin-top: 30vh;
-    }
-
-    .suggestionText{
-        color: rgba(193, 100, 225, 1);
-    }
 </style>
 
 <div class="middleOfPage">
     <h1>digitalboken</h1>
-    <input class="searchbox" type="text" placeholder="Vad undrar du över?" onkeypress="@Keypress"
-        @bind="@Query" @oninput="@((e) => { Query = (string?) e.Value; })"/>
+    <input class="searchbox" type="text" placeholder="Vad undrar du över?" 
+        @bind="@Query"
+        @oninput="@((e) => { Query = (string?) e.Value; })"
+        @onkeypress="@((KeyboardEventArgs x) => Keypress(x))"/>
     <br />
 
     <p class="suggestionText">we knowit</p>

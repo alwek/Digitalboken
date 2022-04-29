@@ -2,11 +2,11 @@ using Digitalboken.Server.Interfaces;
 using Digitalboken.Server.Repositories;
 using Digitalboken.Server.Services;
 using Elastic.Apm.NetCoreAll;
+using Microsoft.Azure.Cosmos;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
 using System.Security.Authentication;
-using Microsoft.Azure.Cosmos;
 
 var builder = WebApplication.CreateBuilder(args);
 

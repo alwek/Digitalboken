@@ -1,4 +1,4 @@
-﻿@page "/document/{guid}"
+﻿@page "/document/{Guid}"
 @using Digitalboken.Client.Models
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
@@ -10,29 +10,28 @@
     }
 </style>
 
-@if(document != null)
+@if(Data != null)
 {
     <div class="documentArea">
-        <h1>@document.Name</h1>
-        <p>@document.Text</p>
+        <h1>@Data.Name</h1>
+        <p>@Data.Text</p>
     </div>
 }
 
 @code {
     [Parameter]
-    public string? guid { get; set; }
-
-    private Models.Document? document { get; set; }
+    public string? Guid { get; set; }
+    private Models.Document? Data { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrWhiteSpace(guid))
+        if (string.IsNullOrWhiteSpace(Guid))
             NavigationManager.NavigateTo("/error");
 
-        HttpResponseMessage response = await Http.GetAsync($"api/Document/{guid}");
+        HttpResponseMessage response = await Http.GetAsync($"api/Document/{Guid}");
 
         if (response.IsSuccessStatusCode)
-            document = await response.Content.ReadFromJsonAsync<Models.Document>();
+            Data = await response.Content.ReadFromJsonAsync<Models.Document>();
         else
             NavigationManager.NavigateTo("/error");
     }

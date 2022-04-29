@@ -1,72 +1,117 @@
-﻿@page "/search/{guid}"
+﻿@page "/search/{Guid}"
 @using Digitalboken.Client.Models
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 
 <style>
-    .documentArea{
-        align-content: center;
-        color: white;
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    p {
+      margin: 0 0 13px 0;
+    }
+
+    a {
+      color: #fff;
+    }
+
+    .center { 
+      text-align: center; 
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1220px;
+      margin: 0 auto;
+      color: #fff;
+    }
+
+    .episode {
+      display: grid;
+      grid-template-columns: 1fr 3fr;
+      position: relative;
+    }
+
+    .episode_number {
+      font-size: 10vw;
+      font-weight: 600;
+      padding: 10px 0;
+      position: sticky;
+      top: 0;
+      text-align: center;
+      height: calc(10vw + 20px);
+      transition: all 0.2s ease-in;
+    }
+
+    .episode_content {
+      border-top: 2px solid #fff;
+      display: grid;
+      grid-template-columns: 1fr 4fr;
+      grid-gap: 10px;
+      padding: 15px 0;
+    }
+
+    .episode_content .title {
+      font-weight: 600
+    }
+
+    .episode_content .story {
+      line-height: 26px;
     }
 
     img {
-        height:170px
-        width: auto;/*maintain aspect ratio*/
-        max-width:500px;
-    }   
-
-    p{
-        text-align: center;
-        color: white;
-    }
-
-    td{
-        text-align: center;
-        color: white;
+        width: 400px;
+        height: 100%;
     }
 </style>
 
-@if(string.IsNullOrEmpty(guid) || data == null || string.IsNullOrEmpty(data.Id))
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <p><em>Got following guid: @guid</em></p>
-    <p>search id: @data.Id</p>
-
-    <table>
-    @foreach(var item in data.Results)
-    {
-        <tr>
-            <td>@item.Title</td>
-            <td>@item.Snippet</td>
-                @if(item.Pagemap?.CseImage?.FirstOrDefault() != null)
-                {
-                    <td><img src=@item.Pagemap.CseImage.FirstOrDefault().Src alt="alternatetext"></td>
-                }
-                else
-                {
-                    <td>no image</td>
-                }
-        </tr>      
-    }
-    </table>
+@if(Data != null) {
+    <div class="container">
+      <h1 class="center">@Data.Queries.Request.First().SearchTerms</h1>
+        @foreach(var item in Data.Results){
+            <article class="episode">
+                <div class="episode_number">@GetResultNumber</div>
+                <div class="episode_content">
+                    <div class="title">
+                        @if(item.Pagemap?.CseImage?.FirstOrDefault() != null)
+                        {
+                            <img src="@item.Pagemap?.CseImage?.FirstOrDefault()?.Src"
+                                onerror="this.src='blazor.svg';this.onerror='';">
+                        }
+                        else
+                        {
+                            <p>no image</p>
+                        }
+                    </div>
+                    <div class="story">
+                        <p><a href="@item.Link">@item.Title</a></p>
+                        <p>@item.Snippet</p>
+                    </div>
+                </div>
+            </article>   
+            Index++;
+        }
+    </div>    
 }
 
 @code {
-    [ParameterAttribute]
-    public string guid { get; set; }
-
-    public Models.Search.Search data { get; set; }
+    [Parameter]
+    public string? Guid { get; set; }
+    private Models.Search.Search? Data { get; set; }
+    private int Index { get; set; } = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        HttpResponseMessage response = await Http.GetAsync($"api/Search/{guid}");
+        HttpResponseMessage response = await Http.GetAsync($"api/Search/{Guid}");
 
         if (response.IsSuccessStatusCode)
-            data = await response.Content.ReadFromJsonAsync<Models.Search.Search>();
+            Data = await response.Content.ReadFromJsonAsync<Models.Search.Search>();
         else
             NavigationManager.NavigateTo("/error");
     }
+
+    private string GetResultNumber => Index < 10 ? $"0{Index}" : $"{Index}";
 }
